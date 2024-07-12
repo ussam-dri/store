@@ -2,9 +2,29 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import axios from 'axios';
+
+
+const CustomAlert = ({ message, type, show, onClose }) => {
+  useEffect(() => {
+    if (show) {
+      const timer = setTimeout(onClose, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [show, onClose]);
+
+  if (!show) return null;
+
+  const alertTypeClass = type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+
+  return (
+    <div className={`fixed z-50  top-4 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-md ${alertTypeClass}`}>
+      <div className="flex justify-between items-center">
+        <span>{message}</span>
+        <button onClick={onClose} className="ml-4 text-lg font-semibold">&times;</button>
+      </div>
+    </div>
+  );
+};
 
 const Cart = () => {
   const auth = useAuthUser();
@@ -12,11 +32,14 @@ const Cart = () => {
   const [open, setOpen] = useState(true);
   const [cartItems, setCartItems] = useState([]);
   const [subtotal, setSubtotal] = useState(0);
+  const [remove, setRemove] = useState(0);
+  const [alert, setAlert] = useState({ show: false, message: '', type: '' });
 
   const fetchCartItems = async () => {
     try {
-      const response = await axios.get(`https://backend-mern-store.zelobrix.com/api/user/${auth.id}/cart`);
-      setCartItems(response.data.cartItems);
+      const response = await fetch(`https://backend-mern-store.zelobrix.com/api/user/${auth.id}/cart`);
+      const data = await response.json();
+      setCartItems(data.cartItems);
     } catch (error) {
       console.error('Error fetching cart items:', error);
     }
@@ -24,7 +47,7 @@ const Cart = () => {
 
   useEffect(() => {
     fetchCartItems();
-  }, []);
+  }, [remove]);
 
   useEffect(() => {
     // Calculate subtotal when cart items change
@@ -41,43 +64,38 @@ const Cart = () => {
 
   const handleRemoveFromCart = async (productId) => {
     try {
-      const response = await axios.delete(`https://backend-mern-store.zelobrix.com/api/user/${auth.id}/cart/${productId}`);
-      
+      const response = await fetch(`https://backend-mern-store.zelobrix.com/api/user/${auth.id}/cart/${productId}`, {
+        method: 'DELETE',
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setRemove(remove + 1);
+        setAlert({ show: true, message: 'Product removed from cart', type: 'success' });
+      } else {
+        setAlert({ show: true, message: 'Failed to remove product from cart. Please try again.', type: 'error' });
+      }
       // Update cartItems state with the updated list after deletion
-      setCartItems(response.data.cartItems);
+      setCartItems(data.cartItems);
       
       // Fetch updated cart items from server
       await fetchCartItems();
-
-      toast.success('Product removed from cart', {
-        position: "top-center",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
     } catch (error) {
       console.error('Error removing product from cart:', error);
-      toast.error('Failed to remove product from cart. Please try again.', {
-        position: "top-center",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
+      setAlert({ show: true, message: 'Failed to remove product from cart. Please try again.', type: 'error' });
     }
   };
 
   return (
     <div className='text-sm'>
-      <ToastContainer containerId="containerA"/>
+      <CustomAlert
+        message={alert.message}
+        type={alert.type}
+        show={alert.show}
+        onClose={() => setAlert({ ...alert, show: false })}
+      />
       <Transition show={open}>
-      <Dialog className="relative z-[60]" onClose={setOpen}>        
-      <TransitionChild
+        <Dialog className="relative z-[30]" onClose={setOpen}>        
+          <TransitionChild
             enter="ease-in-out duration-500"
             enterFrom="opacity-0"
             enterTo="opacity-100"
@@ -123,19 +141,19 @@ const Cart = () => {
                               {cartItems.map((product) => (
                                 <li key={product._id} className="flex py-6">
                                   <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
-                                  {product && product.mainImage?.filename ? (
-                                        <img
-                                          src={`https://backend-mern-store.zelobrix.com/download/${product.mainImage.filename}`}
-                                          alt={product.title}
-                                          className="h-full w-full object-cover object-center"
-                                        />
-                                      ) : (
-                                        <img
-                                          src="placeholder_image_url_here"
-                                          alt="placeholder"
-                                          className="h-full w-full object-cover object-center"
-                                        />
-                                      )}
+                                    {product && product.mainImage?.filename ? (
+                                      <img
+                                        src={`https://backend-mern-store.zelobrix.com/download/${product.mainImage.filename}`}
+                                        alt={product.title}
+                                        className="h-full w-full object-cover object-center"
+                                      />
+                                    ) : (
+                                      <img
+                                        src="placeholder_image_url_here"
+                                        alt="placeholder"
+                                        className="h-full w-full object-cover object-center"
+                                      />
+                                    )}
                                   </div>
 
                                   <div className="ml-4 flex flex-1 flex-col">
@@ -182,7 +200,8 @@ const Cart = () => {
                         <div className="mt-6">
                           <a
                             href="/checkout"
-                            className="flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-indigo-700"
+                            className={`flex items-center justify-center rounded-md border border-transparent px-6 py-3 text-base font-medium text-white shadow-sm ${cartItems.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'}`}
+                            style={{ pointerEvents: cartItems.length === 0 ? 'none' : 'auto' }}
                           >
                             Checkout
                           </a>

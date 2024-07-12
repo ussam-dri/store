@@ -317,6 +317,7 @@ export default function Navigation() {
                     <a href="/profile" className="-m-2 block p-2 font-medium text-gray-900">
                       {auth.FullName}
                     </a>
+                    <br></br>
                     <hr></hr>
                     <button className="-m-2 block p-2 font-medium text-gray-900" onClick={() => signOut()}>Sign Out</button>
 
@@ -488,7 +489,7 @@ export default function Navigation() {
                 }
                 {!isAuthenticated
                 &&
-                <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-end lg:space-x-6">
+                <div className=" lg:flex lg:flex-1 lg:items-center lg:justify-end lg:space-x-6">
                 <a href="/login" className="text-sm font-medium text-gray-700 hover:text-gray-800">
                   Login
                 </a>
@@ -509,12 +510,12 @@ export default function Navigation() {
                 </div>
 
                 {/* Search */}
-                <div className="flex lg:ml-6">
+                {/* <div className="flex lg:ml-6">
                   <a href="#" className="p-2 text-gray-400 hover:text-gray-500">
                     <span className="sr-only">Search</span>
                     <MagnifyingGlassIcon className="h-6 w-6" aria-hidden="true" />
                   </a>
-                </div>
+                </div> */}
 
                 {/* Cart */}
                 <div className="ml-4 flow-root lg:ml-6">

@@ -65,13 +65,16 @@ export default function Profile() {
   const menuItems = [
     { icon: <MdPerson />, label: 'Profile', action: () => handleMenuClick('profile') },
     { icon: <MdFavorite />, label: 'Favorites', action: () => handleMenuClick('favorites') },
-    { icon: <MdShoppingBag />, label: 'Orders', badge: 14, action: () => handleMenuClick('processed') },
+    { icon: <MdShoppingBag />, label: 'Orders', badge: 1, action: () => handleMenuClick('processed') },
     { icon: <MdSettings />, label: 'Settings', action: () => handleMenuClick('changePassword') },
     { icon: <MdExitToApp />, label: 'Log Out', action: () => handleMenuClick('logout') },
   ];
 
   const SidebarContent = () => (
-    <Sidebar>
+<div   className='z-20 '>
+
+
+    <Sidebar >
       <div className="p-4 text-xl font-semibold">Account</div>
       <Menu>
         {menuItems.map((item, index) => (
@@ -90,7 +93,7 @@ export default function Profile() {
           </MenuItem>
         ))}
       </Menu>
-    </Sidebar>
+    </Sidebar></div>
   );
 
   return (
@@ -101,7 +104,7 @@ export default function Profile() {
           <div className="flex flex-grow relative">
             {/* Toggle button for mobile */}
             <button
-              className="md:hidden absolute top-4 left-4 z-50 bg-gray-200 p-2 rounded-md"
+              className="md:hidden absolute top-4 left-4 z-30 bg-gray-200 p-2 rounded-md"
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             >
               {isSidebarOpen ? <AiOutlineClose size={24} /> : <AiOutlineMenu size={24} />}
@@ -115,7 +118,7 @@ export default function Profile() {
             {/* Mobile Sidebar */}
             <div
               className={`
-                md:hidden absolute top-0 left-0 h-full z-40 w-64 bg-white shadow-lg transition-transform transform
+                md:hidden absolute top-0 left-0 h-full z-20 w-64 bg-white shadow-lg transition-transform transform
                 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
               `}
             >

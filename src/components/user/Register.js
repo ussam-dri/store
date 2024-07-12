@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { PhotoIcon } from '@heroicons/react/24/solid';
-import Footer from '../Layouts/Footer';
 import { useNavigate } from 'react-router-dom';
+import Footer from '../Layouts/Footer';
 
 export default function RegisterPortail() {
   const navigate = useNavigate();
@@ -32,9 +31,7 @@ export default function RegisterPortail() {
 
     const files = e.dataTransfer.files;
     if (files.length) {
-      setFormData({
-        ...formData,
-      });
+      // Handle file drop logic here if needed
     }
   };
 
@@ -62,7 +59,6 @@ export default function RegisterPortail() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Function to check if user is over 18 (updated)
   function isOver18(dob) {
     const dobDate = new Date(dob);
     const today = new Date();
@@ -73,12 +69,11 @@ export default function RegisterPortail() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-  
+
     setIsLoading(true);
     try {
       const route = 'https://backend-mern-store.zelobrix.com/api/register';
-  
-      // Create a plain object to send as JSON
+
       const dataToSend = {
         FullName: formData.FullName,
         email: formData.email,
@@ -86,10 +81,7 @@ export default function RegisterPortail() {
         dob: formData.dob,
         password: formData.password
       };
-  
-      // Log data to be sent
-      console.log('Data to be sent:', JSON.stringify(dataToSend));
-  
+
       const response = await fetch(route, {
         method: 'POST',
         headers: {
@@ -97,17 +89,15 @@ export default function RegisterPortail() {
         },
         body: JSON.stringify(dataToSend),
       });
-      if(response.ok){
-        navigate('/login')
-      }
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Network response was not ok');
       }
-  
+
       const result = await response.json();
       console.log('Server response:', result);
-  
+
       toast.success('Member created successfully');
       setFormData({
         FullName: '',
@@ -116,6 +106,7 @@ export default function RegisterPortail() {
         dob: '',
         password: '',
       });
+      navigate('/login');
     } catch (error) {
       console.error('Error creating member:', error.message);
       toast.error(`Failed to create member: ${error.message}`);
@@ -123,6 +114,7 @@ export default function RegisterPortail() {
       setIsLoading(false);
     }
   };
+
   return (
     <>
       <div className="flex min-h-screen bg-gray-50 text-base">

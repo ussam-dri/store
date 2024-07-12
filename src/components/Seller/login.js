@@ -7,13 +7,14 @@ import useSignOut from 'react-auth-kit/hooks/useSignOut';
 const LoginPortail = () => {
   const navigate = useNavigate();
   const signIn = useSignIn();
-  const signOutt=useSignOut();
+  const signOut = useSignOut();
 
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false); // State for loading indicator
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -25,6 +26,7 @@ const LoginPortail = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // Set loading to true on form submission
 
     try {
       const response = await fetch('https://backend-mern-store.zelobrix.com/portail/login', {
@@ -36,7 +38,7 @@ const LoginPortail = () => {
       });
 
       if (response.ok) {
-        signOutt();
+        signOut(); // Example: Sign out current user before signing in again
         const data = await response.json();
         console.log(data.role);
         if (signIn({
@@ -47,7 +49,7 @@ const LoginPortail = () => {
           userState: {
             name: data.name,
             email: data.email,
-            phoneNumber:data.phoneNumber,
+            phoneNumber: data.phoneNumber,
             id: data.id,
             role: data.role
           }
@@ -69,88 +71,94 @@ const LoginPortail = () => {
     } catch (error) {
       console.error('Error during login:', error);
       setError('An error occurred during login');
+    } finally {
+      setLoading(false); // Set loading back to false after request completes
     }
   };
+
   return (
     <>
-    <div className="flex min-h-screen bg-gray-50">
-      <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
-        <div className="mx-auto w-full max-w-sm lg:w-96">
-          <div>
-            <h2 className="mt-6 text-3xl font-extrabold text-gray-900"><img width={"70px"} height={"70px"} src='/images/marketPlaceLogo.png' alt=""/>Sign in</h2>
-          </div>
-
-          <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-            {error && <div className="text-red-500 text-sm">{error}</div>}
-
+      <div className="flex min-h-screen bg-gray-50">
+        <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
+          <div className="mx-auto w-full max-w-sm lg:w-96">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
-              </label>
-              <div className="mt-1">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <div className="mt-1">
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="text-sm">
-                <a href="#" className="font-semibold text-indigo-600 hover:text-indigo-500">
-                  Forgot password?
-                </a>
-              </div>
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
+              <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+                <img width="70px" height="70px" src='/images/marketPlaceLogo.png' alt=""/>
                 Sign in
-              </button>
+              </h2>
             </div>
-            <p className='mt-2'>Don't have an account ? <a href='/reward-program/register'>Sign Up</a> </p>
-          </form>
+
+            <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+              {error && <div className="text-red-500 text-sm">{error}</div>}
+
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  Email address
+                </label>
+                <div className="mt-1">
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  Password
+                </label>
+                <div className="mt-1">
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    autoComplete="current-password"
+                    required
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="text-sm">
+                  <a href="#" className="font-semibold text-indigo-600 hover:text-indigo-500">
+                    Forgot password?
+                  </a>
+                </div>
+              </div>
+
+              <div>
+                <button
+                  type="submit"
+                  className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  disabled={loading}
+                >
+                  {loading ? 'Signing in...' : 'Sign in'}
+                </button>
+              </div>
+              <p className='mt-2'>Don't have an account ? <a href='/reward-program/register'>Sign Up</a> </p>
+            </form>
+          </div>
         </div>
-      </div>
-      <div className="hidden lg:block relative w-0 flex-1">
-        <div className="absolute inset-0 h-full w-full object-cover">
-          <div className="flex flex-col justify-center h-full px-8 bg-gray-100">
-            <h2 className="text-3xl font-extrabold text-gray-900">Start Selling Now and Earn Up To 10K MAD a month.</h2>
-            <p className="mt-3 text-lg text-gray-500">No credit card required,Free</p>
+        <div className="hidden lg:block relative w-0 flex-1">
+          <div className="absolute inset-0 h-full w-full object-cover">
+            <div className="flex flex-col justify-center h-full px-8 bg-gray-100">
+              <h2 className="text-3xl font-extrabold text-gray-900">Start Selling Now and Earn Up To 10K MAD a month.</h2>
+              <p className="mt-3 text-lg text-gray-500">No credit card required, Free</p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-          <Footer></Footer>
-
-          </>
+      <Footer />
+    </>
   );
 };
 

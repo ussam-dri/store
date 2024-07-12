@@ -35,6 +35,7 @@ import EnterEmail from './components/utils/EnterEmail';
 import ProfileSeller from './components/Seller/profile';
 import NewsLetter from './components/utils/NewsLetter';
 import CatPage from './components/Layouts/CategoryPage';
+import './fonts.css'; // Import the custom fonts
 
 function App() {
 
@@ -49,7 +50,7 @@ const store = createStore({
 });
 
   return (
-    <div className="App">
+    <div className="App font-adihausdin">
       <ThemeProvider>
 
      

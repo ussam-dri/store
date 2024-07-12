@@ -6,7 +6,9 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        montserrat: ['"Montserrat"', 'sans-serif'],
+        adihausdin: ['"AdihausDIN"', 'sans-serif'],
+
+        // montserrat: ['"Montserrat"', 'sans-serif'],
       },
       width: {
         '108px': '108px',

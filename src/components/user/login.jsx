@@ -7,14 +7,14 @@ import useSignOut from 'react-auth-kit/hooks/useSignOut';
 const LoginPortail = () => {
   const navigate = useNavigate();
   const signIn = useSignIn();
-  const signOutt=useSignOut();
-
+  const signOutt = useSignOut();
 
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false); // State for loading indicator
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -26,6 +26,7 @@ const LoginPortail = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // Set loading to true on form submission
 
     try {
       const response = await fetch('https://backend-mern-store.zelobrix.com/api/login', {
@@ -46,7 +47,7 @@ const LoginPortail = () => {
           },
           userState: {
             FullName: data.FullName,
-            PhoneNumber:data.phoneNumber,
+            PhoneNumber: data.phoneNumber,
             email: data.email,
             id: data.id,
             role: data.role
@@ -61,6 +62,8 @@ const LoginPortail = () => {
     } catch (error) {
       console.error('Error during login:', error);
       setError('An error occurred during login');
+    } finally {
+      setLoading(false); // Set loading back to false after request completes
     }
   };
 
@@ -69,7 +72,7 @@ const LoginPortail = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch('https://backend-mern-store.zelobrix.comforgot-password', {
+      const response = await fetch('https://backend-mern-store.zelobrix.com/forgot-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -150,9 +153,10 @@ const LoginPortail = () => {
               <div>
                 <button
                   type="submit"
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  disabled={loading}
                 >
-                  Sign in
+                  {loading ? 'Signing in...' : 'Sign in'}
                 </button>
               </div>
               <p className='mt-2'>Don't have an account? <a href='/register'><u>Sign Up</u></a></p>
@@ -162,8 +166,8 @@ const LoginPortail = () => {
         <div className="hidden lg:block relative w-0 flex-1">
           <div className="absolute inset-0 h-full w-full object-cover">
             <div className="flex flex-col justify-center h-full px-8 bg-gray-100">
-            <h2 className="text-3xl font-extrabold text-gray-900">Start Shopping Now and Save Up To 40% on first purchase.</h2>
-            <p className="mt-3 text-lg text-gray-500">Free shipping for all carts higher than 1000 MAD</p>
+              <h2 className="text-3xl font-extrabold text-gray-900">Start Shopping Now and Save Up To 40% on first purchase.</h2>
+              <p className="mt-3 text-lg text-gray-500">Free shipping for all carts higher than 1000 MAD</p>
             </div>
           </div>
         </div>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import PortailHeader from "./Layouts/PortailHeader";
 import Footer from "./Layouts/Footer";
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
+import { toast, ToastContainer } from 'react-toastify';
 
 const AddProduct = () => {
   const auth = useAuthUser()
@@ -97,13 +98,22 @@ const AddProduct = () => {
     });
 
     try {
-      const response = await fetch('http://localhost:8005/addProduct', {
+      const response = await fetch('https://backend-mern-store.zelobrix.com/addProduct', {
         method: 'POST',
         body: formData,
       });
 
       const data = await response.json();
       if (response.ok) {
+        toast.success('Product added to Store', {
+          position: "top-center",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
         setMessage(data.message);
       } else {
         setMessage(`Error: ${data.message}`);
@@ -117,7 +127,8 @@ const AddProduct = () => {
   return (
     <>
     <PortailHeader></PortailHeader>
-   
+    <ToastContainer />
+
     <div className="max-w-2xl mx-auto p-4">
       <h2 className="text-2xl font-bold mb-6 text-gray-900">Add Product</h2>
       <form onSubmit={handleSubmit} className="space-y-8">

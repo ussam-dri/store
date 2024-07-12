@@ -1,14 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
 import { FaTrashAlt, FaCartPlus } from 'react-icons/fa';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const Favorites = () => {
   const auth = useAuthUser();
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [alert, setAlert] = useState({ show: false, message: '', type: '' });
+  const CustomAlert = ({ message, type, show, onClose }) => {
+    useEffect(() => {
+      if (show) {
+        const timer = setTimeout(onClose, 3000);
+        return () => clearTimeout(timer);
+      }
+    }, [show, onClose]);
+  
+    if (!show) return null;
+  
+    const alertTypeClass = type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+  
+    return (
+      <div className={`fixed z-50 top-4 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-md ${alertTypeClass}`}
+           style={{ maxWidth: '90vw', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <div className="flex justify-between items-center">
+          <span className="overflow-hidden">{message}</span>
+          <button onClick={onClose} className="ml-4 text-lg font-semibold">&times;</button>
+        </div>
+      </div>
+    );
+  };
+  
   const fetchFavorites = async () => {
     try {
       const response = await fetch(`https://backend-mern-store.zelobrix.com/api/user/${auth.id}/favorites`);
@@ -38,14 +61,14 @@ const Favorites = () => {
       const data = await response.json();
       if (response.ok) {
         setFavorites(favorites.filter((item) => item.id !== productId));
-        toast.success('Product removed from favorites');
+        setAlert({ show: true, message: 'deleted from favorites!', type: 'success' });
       } else {
         console.error('Failed to delete favorite:', data.message);
-        toast.error(`Failed to delete favorite: ${data.message}`);
+        setAlert({ show: true, message: 'error deleting from favorites!', type: 'fs' });
       }
     } catch (error) {
       console.error('Error deleting favorite:', error);
-      toast.error('Error deleting favorite');
+      setAlert({ show: true, message: 'error deleting from favorites!', type: 'fs' });
     } finally {
       fetchFavorites();  // Reload favorites after a successful delete
     }
@@ -62,24 +85,32 @@ const Favorites = () => {
       });
       const data = await response.json();
       if (response.ok) {
-        toast.success('Product added to cart');
+        setAlert({ show: true, message: 'added to favorites!', type: 'success' });
+
       } else {
         console.error('Failed to add to cart:', data.message);
-        toast.error(`Failed to add to cart: ${data.message}`);
+        setAlert({ show: true, message: 'error adding to favorites!', type: 'hr' });
       }
     } catch (error) {
       console.error('Error adding to cart:', error);
-      toast.error('Error adding to cart');
+      setAlert({ show: true, message: 'error adding to favorites!', type: 'hr' });
     }
   };
 
   return (
     <div className='h-screen mt-20'>
       <h1 className='text-xl'>Favorites</h1>
+
       {loading ? (
         <p>Loading...</p>
       ) : favorites.length > 0 ? (
         <div>
+   <CustomAlert
+        message={alert.message}
+        type={alert.type}
+        show={alert.show}
+        onClose={() => setAlert({ ...alert, show: false })}
+      />
           {favorites.map((item) => (
             <div key={item.id}>
               <div className="w-full flex items-center mb-4">

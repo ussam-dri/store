@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Dialog, Disclosure, Menu } from '@headlessui/react';
 import { XMarkIcon, ChevronDownIcon, FunnelIcon } from '@heroicons/react/20/solid';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css'; // Importing blur effect CSS
 import Navigation from './Navigation';
 import Footer from './Footer';
 
@@ -14,7 +16,7 @@ const sortOptions = [
 
 const brands = [
   { value: 'Nike', label: 'Nike' },
-  { value: 'Adidas', label: 'Adidas' },
+  { value: 'adidas', label: 'Adidas' },
   { value: 'Reebok', label: 'Reebok' },
   { value: 'Puma', label: 'Puma' },
 ];
@@ -23,55 +25,85 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
 
+const LoadingSpinner = () => (
+  <svg className="animate-spin h-10 w-10 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+  </svg>
+);
+
 export default function CatPage() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState('popular');
-  const [selectedBrand, setSelectedBrand] = useState('');
-  const { cat, gender } = useParams();
+  const [selectedBrand, setSelectedBrand] = useState('Nike');
+  const { cat } = useParams();
 
   useEffect(() => {
     fetchProducts();
-  }, [cat, gender, selectedBrand]);
+  }, [cat, selectedBrand, sortBy]);
 
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      let url = `https://backend-mern-store.zelobrix.com/api/products/getByGender/${cat}?gender=${gender}`;
-      if (selectedBrand) url += `&tag=${selectedBrand}`;
+      const fetchAndSortProducts = async () => {
+        try {
+          let url = `https://backend-mern-store.zelobrix.com/api/products/getByGender/${cat}`;
 
-      const response = await fetch(url);
-      const data = await response.json();
-      setProducts(data.products || []);
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+      
+          const data = await response.json();
+          console.log('Fetched data:', data);
+      
+          if (!Array.isArray(data.products)) {
+            throw new Error('Expected data.products to be an array');
+          }
+      
+          const filteredProducts = data.products.filter(product => product.tag === selectedBrand);
+          console.log('Filtered products:', filteredProducts);
+      
+          let sortedProducts = [...filteredProducts];
+          sortedProducts.sort((a, b) => {
+            switch (sortBy) {
+              case 'rating-desc':
+                return b.rating - a.rating;
+              case 'price-asc':
+                return a.price - b.price;
+              case 'price-desc':
+                return b.price - a.price;
+              default:
+                return 0;
+            }
+          });
+      
+          setProducts(sortedProducts);
+        } catch (error) {
+          console.error('Failed to fetch and sort products:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      fetchAndSortProducts();
+      
     } catch (error) {
       console.error('Error fetching products:', error);
-    } finally {
       setLoading(false);
     }
   };
 
   const handleBrandChange = (brand) => {
+    setLoading(true);
     setSelectedBrand(brand === selectedBrand ? '' : brand);
   };
 
-  const sortedProducts = [...products].sort((a, b) => {
-    switch (sortBy) {
-      case 'rating-desc':
-        return b.rating - a.rating;
-      case 'price-asc':
-        return a.price - b.price;
-      case 'price-desc':
-        return b.price - a.price;
-      default:
-        return 0;
-    }
-  });
-
   const handleSort = (value) => {
+    setLoading(true);
     setSortBy(value);
-    // Update the current property of the sort options
-    sortOptions.forEach(option => option.current = option.value === value);
   };
 
   return (
@@ -88,18 +120,20 @@ export default function CatPage() {
             muted
           />
           <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
-            <div className="text-center font-montserrat">
-              <h2 className="text-5xl font-bold text-white">Home & Lifestyle</h2>
-              <p className="mt-2 text-xl text-white">Elevate your home and lifestyle with our curated products</p>
-            </div>
-          </div>
+        <div className="text-center font-adihausdin">
+          <h2 className="text-5xl font-bold text-white">Step Up Your Style</h2>
+          {/* Responsive text */}
+          <p className="mt-2 text-xl text-white lg:text-base">Discover the perfect pair with our exclusive selection of shoes.</p>
+        </div>
+</div>
+
         </div>
 
         <Dialog as="div" className="relative z-40 lg:hidden" open={mobileFiltersOpen} onClose={setMobileFiltersOpen}>
           <div className="fixed inset-0 bg-black bg-opacity-25" />
           <div className="fixed inset-0 flex z-40">
             <Dialog.Panel className="ml-auto relative max-w-xs w-full h-full bg-white shadow-xl py-4 pb-12 flex flex-col overflow-y-auto">
-              <div className="px-4 flex items-center justify-between">
+              <div className="px-4 flex  justify-between">
                 <h2 className="text-lg font-medium text-gray-900">Filters</h2>
                 <button
                   type="button"
@@ -114,33 +148,45 @@ export default function CatPage() {
               {/* Filters */}
               <form className="mt-4 border-t border-gray-200">
                 {/* Brand Filter */}
-                <Disclosure as="div" className="border-t border-gray-200 px-4 py-6">
-                  <h3 className="flow-root">
-                    <Disclosure.Button className="flex w-full items-center justify-between bg-white py-3 text-sm text-gray-400 hover:text-gray-500">
-                      <span className="font-medium text-gray-900">Brands</span>
-                      <ChevronDownIcon className="ml-6 flex-shrink-0 h-5 w-5 text-gray-500" aria-hidden="true" />
-                    </Disclosure.Button>
-                  </h3>
-                  <Disclosure.Panel className="pt-6">
-                    <div className="space-y-4">
-                      {brands.map((brand) => (
-                        <div key={brand.value} className="flex items-center">
-                          <input
-                            id={`filter-mobile-brand-${brand.value}`}
-                            name="brand[]"
-                            value={brand.value}
-                            type="checkbox"
-                            checked={selectedBrand === brand.value}
-                            onChange={() => handleBrandChange(brand.value)}
-                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                          />
-                          <label htmlFor={`filter-mobile-brand-${brand.value}`} className="ml-3 min-w-0 flex-1 text-gray-500">
-                            {brand.label}
-                          </label>
+                <Disclosure as="div" className="border-t border-gray-200 px-4 py-6" defaultOpen={true}>
+                  {({ open }) => (
+                    <>
+                      <h3 className="-mx-2 -my-3 flow-root">
+                        <Disclosure.Button className="flex w-full items-center justify-between bg-white px-2 py-3 text-gray-400 hover:text-gray-500">
+                          <span className="font-medium text-gray-900">Brands</span>
+                          <span className="ml-6 flex items-center">
+                            <ChevronDownIcon
+                              className={classNames(open ? '-rotate-180' : 'rotate-0', 'h-5 w-5 transform')}
+                              aria-hidden="true"
+                            />
+                          </span>
+                        </Disclosure.Button>
+                      </h3>
+                      <Disclosure.Panel className="pt-6">
+                        <div className="space-y-6">
+                          {brands.map((brand) => (
+                            <div key={brand.value} className="flex items-center">
+                              <input
+                                id={`filter-mobile-${brand.value}`}
+                                name="brand[]"
+                                value={brand.value}
+                                type="checkbox"
+                                checked={selectedBrand === brand.value}
+                                onChange={() => handleBrandChange(brand.value)}
+                                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                              />
+                              <label
+                                htmlFor={`filter-mobile-${brand.value}`}
+                                className="ml-3 min-w-0 flex-1 text-gray-500"
+                              >
+                                {brand.label}
+                              </label>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </Disclosure.Panel>
+                      </Disclosure.Panel>
+                    </>
+                  )}
                 </Disclosure>
               </form>
             </Dialog.Panel>
@@ -158,17 +204,8 @@ export default function CatPage() {
                 </div>
               </li>
               <li>
-                <div className="flex items-center">
-                  <ChevronDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-                  <Link to="/category/men" className="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">
-                    Categories
-                  </Link>
-                </div>
-              </li>
-              <li>
-                <div className="flex items-center">
-                  <ChevronDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-                  <Link to={`/category/${cat}`} className="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700 capitalize">
+                <div className="flex items-center">/
+                    <Link to={`/category/${cat}`} className="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700 capitalize">
                     {cat}
                   </Link>
                 </div>
@@ -222,9 +259,24 @@ export default function CatPage() {
                 Products
               </h2>
 
+              {/* Mobile filter dialog */}
+              <div className="relative">
+                <button
+                  type="button"
+                  className="inline-flex lg:hidden mb-4 absolute right-0"
+                  onClick={() => setMobileFiltersOpen(true)}
+                >
+                  <span className="text-sm font-medium text-gray-700">Filters</span>
+                  <FunnelIcon
+                    className="flex-shrink-0 ml-1 h-5 w-5 text-gray-400"
+                    aria-hidden="true"
+                  />
+                </button>
+              </div>
+
               {/* Sort dropdown */}
               <div className="flex items-center justify-between border-b border-gray-200 pb-5">
-                <Menu as="div" className="relative inline-block text-left">
+                <Menu as="div" className="relative inline-block text-left z-10">
                   <div>
                     <Menu.Button className="group inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
                       Sort
@@ -235,7 +287,7 @@ export default function CatPage() {
                     </Menu.Button>
                   </div>
 
-                  <Menu.Items className="absolute right-0 mt-2 w-40 origin-top-right bg-white border border-gray-200 divide-y divide-gray-100 rounded-md shadow-lg outline-none">
+                  <Menu.Items className="absolute left-0 mt-2 w-40 origin-top-left bg-white border border-gray-200 divide-y divide-gray-100 rounded-md shadow-lg outline-none">
                     {sortOptions.map((option) => (
                       <Menu.Item key={option.value}>
                         {({ active }) => (
@@ -259,33 +311,35 @@ export default function CatPage() {
 
               {/* Product list */}
               <div className="grid grid-cols-3 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8 md:grid-cols-3">
-              {loading ? (
-                  <div className="flex items-center justify-center w-full h-full">
-                    <div className="loader">Loading...</div>
+                {loading ? (
+                  <div className="col-span-full flex items-center justify-center h-64">
+                    <LoadingSpinner />
                   </div>
                 ) : (
-                  sortedProducts.map((product) => (
-                    <div key={product._id} className="group relative">
-                      <div className="w-full min-h-80 bg-gray-200 aspect-w-1 aspect-h-1 rounded-md overflow-hidden group-hover:opacity-75 lg:h-80 lg:aspect-none">
-                        <img
-                          src={`https://backend-mern-store.zelobrix.com/download/${product.mainImage.filename}`}
-                          alt={product.title}
-                          className="w-full h-full object-center object-cover lg:w-full lg:h-full"
-                        />
-                      </div>
-                      <div className="mt-4 flex justify-between">
-                        <div>
-                          <h3 className="text-sm text-gray-700">
-                            <Link to={`/product/${product._id}`}>
-                              <span aria-hidden="true" className="absolute inset-0" />
-                              {product.title}
-                            </Link>
-                          </h3>
-                          <p className="mt-1 text-sm text-gray-500">{product.tag}</p>
+                  products.map((product) => (
+                    <a key={product._id} href={`https://mern-store.zelobrix.com/product/${product._id}`}>
+                      <div className="group relative">
+                        <div className="aspect-h-9 aspect-w-9 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-h-8 xl:aspect-w-7">
+                          <LazyLoadImage
+                            alt={product.title}
+                            effect="blur" // Apply the blur effect if imported
+                            src={`https://backend-mern-store.zelobrix.com/download/${product.mainImage.filename}`}
+                            className="h-full w-full object-cover object-center group-hover:opacity-75"
+                          />
                         </div>
-                        <p className="text-sm font-medium text-gray-900">${product.price}</p>
+                        <div className="mt-4 flex flex-col justify-between">
+                          <h1 className="text-xs text-gray-700">{product.title}</h1>
+                          <div className="flex items-center justify-between mt-1">
+                            <div className="flex items-center">
+                              {Array.from({ length: product.rating }, (_, i) => (
+                                <span key={i} className="star text-xs">★</span>
+                              ))}
+                            </div>
+                            <p className="text-xs font-medium text-gray-900"><b>{product.price} MAD</b></p>
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    </a>
                   ))
                 )}
               </div>
