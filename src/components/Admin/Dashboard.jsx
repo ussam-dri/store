@@ -1,25 +1,62 @@
 import React, { useEffect, useState } from 'react';
 import { MagnifyingGlassIcon, UserPlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
-import SidebarAdmin from './sideBarAdmin';
-import Navigation from '../Layouts/Navigation';
+import { Sidebar, Menu, MenuItem } from 'react-pro-sidebar';
+import { AiOutlineMenu, AiOutlineClose } from 'react-icons/ai';
+import {MdPerson,MdFavorite,MdShoppingBag,MdSettings,MdExitToApp} from 'react-icons/md';
+import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
+import useIsAuthenticated from 'react-auth-kit/hooks/useIsAuthenticated';
+import useSignOut from 'react-auth-kit/hooks/useSignOut';
+import { useNavigate } from 'react-router-dom';
 import Footer from '../Layouts/Footer';
+import PortailHeader from '../Layouts/PortailHeader';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import PortailHeader from '../Layouts/PortailHeader';
-
+import Orders from './Orders'
+import Payment from './Payment';
+import AdminProfile from './AdminProfile';
+// import AdminProfile from './adminProfile';
 const Dashboard = () => {
   const [managers, setManagers] = useState([]);
   const [sellers, setSellers] = useState([]);
   const [filter, setFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedMenu, setSelectedMenu] = useState('members');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const signOut = useSignOut();
+  const navigate = useNavigate();
+  const isAuth = useIsAuthenticated();
+  const auth = useAuthUser();
 
-  const employed = '19/09/17';
-  const status = 'ONLINE';
+  useEffect(() => {
+    if (!isAuth) {
+      navigate('/reward-program/login');
+    }
 
-  function formatDate(dateString) {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  }
+    const fetchManagers = async () => {
+      const response = await fetch('https://backend-mern-store.zelobrix.com/get-all-managers');
+      const data = await response.json();
+      setManagers(data);
+    };
+
+    const fetchSellers = async () => {
+      const response = await fetch('https://backend-mern-store.zelobrix.com/get-all-sellers');
+      const data = await response.json();
+      setSellers(data);
+    };
+
+    fetchManagers();
+    fetchSellers();
+  }, [isAuth, navigate]);
+
+  const handleMenuClick = (menu) => {
+    if (menu === 'logout') {
+      signOut();
+      navigate('/reward-program/login');
+    } else {
+      setSelectedMenu(menu);
+      setIsSidebarOpen(false);
+    }
+  };
 
   const deleteUser = async (id, type) => {
     try {
@@ -45,22 +82,10 @@ const Dashboard = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchManagers = async () => {
-      const response = await fetch('https://backend-mern-store.zelobrix.com/get-all-managers');
-      const data = await response.json();
-      setManagers(data);
-    };
-
-    const fetchSellers = async () => {
-      const response = await fetch('https://backend-mern-store.zelobrix.com/get-all-sellers');
-      const data = await response.json();
-      setSellers(data);
-    };
-
-    fetchManagers();
-    fetchSellers();
-  }, []);
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
 
   const filteredMembers = [...managers, ...sellers].filter(member => {
     if (filter !== 'All' && member.role !== filter.toLowerCase()) return false;
@@ -68,18 +93,11 @@ const Dashboard = () => {
     return true;
   });
 
-  return (
-    <div>
-        <PortailHeader/>
-      <div className="flex">
-        <div className="hidden md:block">
-          <SidebarAdmin />
-        </div>
-        <div className="flex-1 p-6">
-          <div className="block md:hidden">
-            <p className="text-center text-gray-600">Please use a desktop to view this page</p>
-          </div>
-          <div className="hidden md:block">
+  const renderContent = () => {
+    switch (selectedMenu) {
+      case 'members':
+        return (
+          <div>
             <div className="flex justify-between items-center mb-6">
               <div>
                 <h2 className="text-2xl font-bold">Members list</h2>
@@ -149,9 +167,9 @@ const Dashboard = () => {
                     </td>
                     <td className="py-3 px-6 text-left">
                       <span className={`py-1 px-3 rounded-full text-xs ${
-                        status === 'ONLINE' ? 'bg-green-200 text-green-600' : 'bg-gray-200 text-gray-600'
+                        member.status === 'ONLINE' ? 'bg-green-200 text-green-600' : 'bg-gray-200 text-gray-600'
                       }`}>
-                        {status}
+                        ONLINE
                       </span>
                     </td>
                     <td className="py-3 px-6 text-left">{formatDate(member.employed)}</td>
@@ -179,11 +197,89 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-        </div>
-      </div>
-      <Footer />
-      <ToastContainer />
+        );
+      case 'Payment':
+        return <Payment></Payment>  
+        case 'Orders':
+        return <Orders></Orders>       
+        case 'profile':
+        return <AdminProfile></AdminProfile>
+        case 'Payment':
+        return <Payment></Payment>  
+      default:
+        return <div>Select a menu item to view its content.</div>;
+    }
+  };
+
+  const menuItems = [
+    { icon: <MdPerson />, label: 'Members', action: () => handleMenuClick('members') },
+    { icon: <MdFavorite />, label: 'Payment', action: () => handleMenuClick('Payment') },
+    { icon: <MdShoppingBag />, label: 'Orders', action: () => handleMenuClick('Orders') },
+    { icon: <MdSettings />, label: 'profile', action: () => handleMenuClick('profile') },
+    { icon: <MdExitToApp />, label: 'Log Out', action: () => handleMenuClick('logout') },
+  ];
+
+  const SidebarContent = () => (
+    <div className='z-20'>
+      <Sidebar>
+        <div className="p-4 text-xl font-semibold">Dashboard</div>
+        <Menu>
+          {menuItems.map((item, index) => (
+            <MenuItem
+              key={index}
+              icon={item.icon}
+              onClick={item.action}
+              className="flex items-center py-2 px-4 hover:bg-gray-100"
+            >
+              <span className="ml-2">{item.label}</span>
+            </MenuItem>
+          ))}
+        </Menu>
+      </Sidebar>
     </div>
+  );
+
+  return (
+    <>
+      {isAuth && auth.role === 'admin' ? (
+        <div className="flex flex-col min-h-screen">
+          <PortailHeader />
+          <div className="flex flex-grow relative">
+            {/* Toggle button for mobile */}
+            <button
+              className="md:hidden absolute top-4 left-4 z-30 bg-gray-200 p-2 rounded-md"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            >
+              {isSidebarOpen ? <AiOutlineClose size={24} /> : <AiOutlineMenu size={24} />}
+            </button>
+
+            {/* Desktop Sidebar */}
+            <div className="hidden md:block w-64 bg-white shadow-lg">
+              <SidebarContent />
+            </div>
+
+            {/* Mobile Sidebar */}
+            <div
+              className={`
+                md:hidden absolute top-0 left-0 h-full z-20 w-64 bg-white shadow-lg transition-transform transform
+                ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+              `}
+            >
+              <SidebarContent />
+            </div>
+
+            {/* Main content */}
+            <div className="flex-grow p-6">
+              {renderContent()}
+            </div>
+          </div>
+          <Footer />
+          <ToastContainer />
+        </div>
+      ) : (
+        <div>Please Login First!</div>
+      )}
+    </>
   );
 };
 

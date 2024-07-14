@@ -21,7 +21,7 @@ import Profile from './components/user/profile';
 import  Dashboard  from './components/Admin/Dashboard';
 import AddMember from './components/Admin/addMember';
 import EditMember from './components/Admin/editMember';
-import AdminProfile from './components/Admin/adminProfile';
+import AdminProfile from './components/Admin/AdminProfile';
 import LoginPortail from './components/Seller/login';
 import RegisterPortail from './components/Seller/register';
 import SellerDashboard from './components/Seller/dashboard';

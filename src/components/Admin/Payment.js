@@ -16,7 +16,7 @@ import {
   Tooltip,
   Input,
 } from "@material-tailwind/react";
- 
+const Payment = () => {
 const TABLE_HEAD = ["Transaction", "Amount", "Date", "Status", "Account", ""];
  
 const TABLE_ROWS = [
@@ -72,9 +72,10 @@ const TABLE_ROWS = [
   },
 ];
  
-export function Payment() {
-  return (
-    <Card className="h-full w-full">
+
+   return (
+     <div>
+        <Card className="h-full w-full">
       <CardHeader floated={false} shadow={false} className="rounded-none">
         <div className="mb-4 flex flex-col justify-between gap-8 md:flex-row md:items-center">
           <div>
@@ -270,5 +271,8 @@ export function Payment() {
         </Button>
       </CardFooter>
     </Card>
-  );
-}
+     </div>
+   )
+ }
+ 
+ export default Payment

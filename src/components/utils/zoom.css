@@ -1,0 +1,25 @@
+/* Zoom effect */
+.zoom-container {
+    position: relative;
+  }
+  
+  .zoom-lens {
+    position: absolute;
+    border: 1px solid #d4d4d4;
+    width: 100px; /* Lens size */
+    height: 100px;
+    visibility: hidden;
+  }
+  
+  .zoom-result {
+    position: absolute;
+    border: 1px solid #d4d4d4;
+    width: 300px; /* Result size */
+    height: 300px;
+    top: 0;
+    left: 110%; /* Position result to the right of the image */
+    visibility: hidden;
+    overflow: hidden;
+    background-repeat: no-repeat;
+  }
+  

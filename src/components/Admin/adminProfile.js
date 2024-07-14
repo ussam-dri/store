@@ -16,9 +16,7 @@ const AdminProfile = () => {
  }
   return (
     <>
-      <PortailHeader />
       <div className="flex">
-        <SidebarAdmin />
 
         <div className="w-full md:w-3/4 text-left p-6">
           <div className="px-4 sm:px-0">
@@ -47,7 +45,6 @@ const AdminProfile = () => {
           </div>
         </div>
       </div>
-      <Footer />
     </>
   );
 };

@@ -21,3 +21,18 @@ code {
 html {
   font-family: 'AdihausDIN', sans-serif;
 }
+/* Zoom effect */
+.zoom-container {
+  position: relative;
+  overflow: hidden;
+  cursor: zoom-in;
+}
+
+.zoomed-image {
+  transition: transform 0.3s ease-in-out;
+}
+
+.zoomed {
+  transform: scale(2); /* Adjust the scale factor as needed */
+  cursor: zoom-out;
+}

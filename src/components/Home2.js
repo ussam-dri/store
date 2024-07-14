@@ -6,6 +6,7 @@ import Categories from './Layouts/categories'
 import ProdList from './ProdList'
 import Brands from './products/Brands'
 import Footer2 from './Layouts/Footer2'
+/// this is the main HOME PAGE USED IN / AND /HOME
 const Home2 = () => {
   
   return (

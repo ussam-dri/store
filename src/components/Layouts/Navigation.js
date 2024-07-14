@@ -166,6 +166,13 @@ export default function Navigation() {
   const [open, setOpen] = useState(false)
   const [showCart, setShowCart] = useState(null);
   const [cartItemsCount, setCartItemsCount] = useState(0);
+  const signOutt=(()=>{
+    signOut();
+    setTimeout(() => {
+      nav('/home');
+      setOpen(false);
+    }, 1000);
+  });
   useEffect(()=>{
     if(isAuthenticated && auth.role!=='client' ){
       signOut();
@@ -319,7 +326,7 @@ export default function Navigation() {
                     </a>
                     <br></br>
                     <hr></hr>
-                    <button className="-m-2 block p-2 font-medium text-gray-900" onClick={() => signOut()}>Sign Out</button>
+                    <button className="-m-2 block p-2 font-medium text-gray-900" onClick={() => signOutt()}>Sign Out</button>
 
                   </div>
 

@@ -71,29 +71,28 @@ export default function Profile() {
   ];
 
   const SidebarContent = () => (
-<div   className='z-20 '>
-
-
-    <Sidebar >
-      <div className="p-4 text-xl font-semibold">Account</div>
-      <Menu>
-        {menuItems.map((item, index) => (
-          <MenuItem 
-            key={index} 
-            icon={item.icon}
-            onClick={item.action}
-            className="flex items-center py-2 px-4 hover:bg-gray-100"
-          >
-            <span className="ml-2">{item.label}</span>
-            {item.badge && (
-              <span className="ml-auto bg-gray-200 text-gray-700 rounded-full px-2 py-1 text-xs">
-                {item.badge}
-              </span>
-            )}
-          </MenuItem>
-        ))}
-      </Menu>
-    </Sidebar></div>
+    <div className="h-auto md:h-screen">
+      <Sidebar className="h-auto md:h-full">
+        <div className="p-4 text-xl font-semibold">Account</div>
+        <Menu>
+          {menuItems.map((item, index) => (
+            <MenuItem 
+              key={index} 
+              icon={item.icon}
+              onClick={item.action}
+              className="flex items-center py-2 px-4 hover:bg-gray-100"
+            >
+              <span className="ml-2">{item.label}</span>
+              {item.badge && (
+                <span className="ml-auto bg-gray-200 text-gray-700 rounded-full px-2 py-1 text-xs">
+                  {item.badge}
+                </span>
+              )}
+            </MenuItem>
+          ))}
+        </Menu>
+      </Sidebar>
+    </div>
   );
 
   return (
@@ -111,14 +110,14 @@ export default function Profile() {
             </button>
 
             {/* Desktop Sidebar */}
-            <div className="hidden md:block w-64 bg-white shadow-lg">
+            <div className="hidden md:block w-70 bg-white shadow-lg h-screen ">
               <SidebarContent />
             </div>
 
             {/* Mobile Sidebar */}
             <div
               className={`
-                md:hidden absolute top-0 left-0 h-full z-20 w-64 bg-white shadow-lg transition-transform transform
+                md:hidden absolute top-0 left-0 z-20 w-70 bg-white shadow-lg transition-transform transform
                 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
               `}
             >
